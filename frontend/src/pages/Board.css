@@ -1,0 +1,32 @@
+.board-header {
+  margin-bottom: 24px;
+}
+.board-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+}
+.board-breadcrumb-link {
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+.board-breadcrumb-link:hover {
+  color: var(--accent-primary);
+}
+.board-breadcrumb-sep {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+.board-breadcrumb-current {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.board-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
