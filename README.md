@@ -1,4 +1,4 @@
-# 🚀 TaskFlow — Smart Task Management System
+# TaskFlow — Smart Task Management System
 
 ![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.4-6DB33F?style=flat-square&logo=spring-boot&logoColor=white)
@@ -11,35 +11,35 @@ A full-stack **Kanban-style task management system** with real-time collaboratio
 
 ---
 
-## ✨ Features
+## Features
 
 ### Core
-- **🔐 JWT Authentication** — Secure register/login with role-based access (Admin, Manager, Member)
-- **📋 Kanban Board** — Drag-and-drop task management across 4 columns (Todo → In Progress → Review → Done)
-- **⚡ Real-Time Updates** — WebSocket (STOMP/SockJS) pushes task changes to all connected clients instantly
-- **📊 Analytics Dashboard** — Recharts-powered pie/bar charts for task status and priority distribution
-- **🏗️ Project Management** — Create projects, add members, manage tasks per project
-- **💬 Comments** — Task-level commenting system
+- ** JWT Authentication** — Secure register/login with role-based access (Admin, Manager, Member)
+- ** Kanban Board** — Drag-and-drop task management across 4 columns (Todo → In Progress → Review → Done)
+- ** Real-Time Updates** — WebSocket (STOMP/SockJS) pushes task changes to all connected clients instantly
+- ** Analytics Dashboard** — Recharts-powered pie/bar charts for task status and priority distribution
+- ** Project Management** — Create projects, add members, manage tasks per project
+- ** Comments** — Task-level commenting system
 
-### 🆕 Unique / Differentiating Features
+###  Unique / Differentiating Features
 - **⌘K Command Palette** — Spotlight-style search overlay to instantly navigate projects, boards, and analytics. Full keyboard navigation with fuzzy search.
-- **🍅 Focus Timer (Pomodoro)** — Built-in productivity timer with 25/5/15 min work/break cycles, circular SVG progress ring, desktop notifications on completion, and session tracking.
-- **✅ Subtasks & Checklists** — Break tasks into sub-items with progress tracking. Click any task card to open a detail modal for managing checklists, editing descriptions, and changing priorities.
-- **📊 Activity Timeline** — Real-time activity feed on the dashboard tracking task creation, status changes, project events, and logins with relative timestamps.
-- **🔐 Password Strength Meter** — Live visual feedback during registration with animated strength bar (Weak → Excellent), inline validation hints, and password confirmation field.
-- **🔔 Toast Notifications** — Global notification system (success/error/info/warning) with auto-dismiss progress bars, replacing all browser alerts.
+- ** Focus Timer (Pomodoro)** — Built-in productivity timer with 25/5/15 min work/break cycles, circular SVG progress ring, desktop notifications on completion, and session tracking.
+- ** Subtasks & Checklists** — Break tasks into sub-items with progress tracking. Click any task card to open a detail modal for managing checklists, editing descriptions, and changing priorities.
+- ** Activity Timeline** — Real-time activity feed on the dashboard tracking task creation, status changes, project events, and logins with relative timestamps.
+- ** Password Strength Meter** — Live visual feedback during registration with animated strength bar (Weak → Excellent), inline validation hints, and password confirmation field.
+- ** Toast Notifications** — Global notification system (success/error/info/warning) with auto-dismiss progress bars, replacing all browser alerts.
 
-### 🎨 Premium UI / UX
-- **🌙 Premium Dark UI** — Glassmorphism design system with gradients, glow effects, and Inter typography
-- **✨ Animated Particle Background** — 30 floating particles with pure CSS animations across all pages
-- **🌀 Parallax Orb Animations** — Auth pages feature drifting gradient orbs with animated mesh grid pattern
-- **💫 Micro-Animations** — Button ripple effects, staggered card entrances, glow pulses, and smooth page transitions
-- **👁 Password Visibility Toggles** — Eye icon toggle on all password fields
-- **📝 Remember Me** — Persistent email storage on login page
-- **👤 User Dropdown** — Profile info, role badge, and sign-out in the navbar
-- **⌨️ Keyboard Shortcuts** — `⌘K`/`Ctrl+K` for command palette, `Esc` to close modals
+### Premium UI / UX
+- ** Premium Dark UI** — Glassmorphism design system with gradients, glow effects, and Inter typography
+- ** Animated Particle Background** — 30 floating particles with pure CSS animations across all pages
+- ** Parallax Orb Animations** — Auth pages feature drifting gradient orbs with animated mesh grid pattern
+- ** Micro-Animations** — Button ripple effects, staggered card entrances, glow pulses, and smooth page transitions
+- ** Password Visibility Toggles** — Eye icon toggle on all password fields
+- ** Remember Me** — Persistent email storage on login page
+- ** User Dropdown** — Profile info, role badge, and sign-out in the navbar
+- **⌨ Keyboard Shortcuts** — `⌘K`/`Ctrl+K` for command palette, `Esc` to close modals
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌────────────────┐     ┌─────────────────┐     ┌──────────────┐
@@ -52,7 +52,7 @@ A full-stack **Kanban-style task management system** with real-time collaboratio
 └────────────────┘     └─────────────────┘     └──────────────┘
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Java 17+
@@ -113,14 +113,14 @@ docker-compose up --build
 | GET | `/api/tasks/project/{id}/analytics/priority` | Task priority counts |
 | WS | `/ws` | WebSocket (STOMP) endpoint |
 
-## 📈 Monitoring
+##  Monitoring
 
 - **Health**: `http://localhost:8080/actuator/health`
 - **Metrics**: `http://localhost:8080/actuator/prometheus`
 - **Prometheus**: See `devops-pipeline/monitoring/prometheus.yml`
 - **Grafana**: Import dashboard ID `4701` for Spring Boot metrics
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -131,7 +131,7 @@ docker-compose up --build
 | DevOps | Docker, docker-compose, GitHub Actions, Kubernetes |
 | Monitoring | Actuator, Micrometer, Prometheus, Grafana |
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 task-management-system/
@@ -172,7 +172,7 @@ task-management-system/
     └── package.json
 ```
 
-## 🖼️ Screenshots
+## Screenshots
 
 ### Login Page
 Premium glassmorphism design with parallax orb animations, password visibility toggle, and remember me option.
@@ -189,6 +189,6 @@ Press `⌘K` / `Ctrl+K` to instantly search and navigate to any project or board
 ### Focus Timer
 Built-in Pomodoro timer with circular progress ring, work/break mode switching, and desktop notifications.
 
-## 📄 License
+## License
 
 MIT
