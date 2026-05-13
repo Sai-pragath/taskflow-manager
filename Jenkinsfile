@@ -18,14 +18,15 @@ pipeline {
             steps {
                 // We do NOT need to 'cd' anywhere. Jenkins is already in the project root!
                 sh '''
-                    # Export the variable so docker-compose can use it
+                    # Export the variables
                     export DOCKERHUB_USERNAME=${DOCKERHUB_USERNAME}
+                    export BACKEND_PORT=8081
                     
                     # Stop old containers
-                    docker-compose down || true
+                    docker-compose --profile monitoring down || true
                     
-                    # Build new images and start containers in the background
-                    docker-compose up -d --build
+                    # Build new images and start ALL containers (including monitoring)
+                    docker-compose --profile monitoring up -d --build
                 '''
             }
         }
@@ -33,8 +34,8 @@ pipeline {
         stage('Health Check') {
             steps {
                 sh 'sleep 10'
-                // Check if backend is responding (assuming port 8080)
-                sh 'curl -f http://localhost:8080/actuator/health || exit 1'
+                // Check if backend is responding (Updated to port 8081!)
+                sh 'curl -f http://localhost:8081/actuator/health || exit 1'
             }
         }
     }
@@ -46,8 +47,8 @@ pipeline {
         }
         failure {
             echo 'Deployment failed! Check the logs above.'
-            // If you want to rollback, do it here without cd /home/ubuntu...
-            sh 'docker-compose down || true'
+            // Rollback monitoring and app containers
+            sh 'docker-compose --profile monitoring down || true'
         }
     }
 }
