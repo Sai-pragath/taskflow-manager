@@ -10,7 +10,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/Sai-pragath/taskflow-manager.git',
-                    credentialsId: 'github-credentials'
+                    credentialsId: 'dockerhub-credentials'
             }
         }
 
