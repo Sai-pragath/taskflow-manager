@@ -53,6 +53,13 @@ services:
       timeout: 5s
       retries: 3
       start_period: 40s
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      # ... (your other variables) ...
+      
+      # Add this line at the bottom of the backend environment block:
+      APP_CORS_ALLOWED_ORIGINS: "*"
+
 
   # ─────────────────────────────────────────
   # React Frontend (nginx)
