@@ -1,0 +1,142 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "title": "Application Uptime",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "process_uptime_seconds{application=\"taskflow-backend\"}",
+          "legendFormat": "Uptime (s)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      }
+    },
+    {
+      "title": "HTTP Request Rate (5m)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count{application=\"taskflow-backend\"}[5m])",
+          "legendFormat": "{{method}} {{uri}} ({{status}})"
+        }
+      ]
+    },
+    {
+      "title": "HTTP Response Time (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{application=\"taskflow-backend\"}[5m]))",
+          "legendFormat": "{{method}} {{uri}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      }
+    },
+    {
+      "title": "JVM Heap Memory",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes{application=\"taskflow-backend\", area=\"heap\"}",
+          "legendFormat": "{{id}}"
+        },
+        {
+          "expr": "jvm_memory_max_bytes{application=\"taskflow-backend\", area=\"heap\"}",
+          "legendFormat": "Max {{id}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "bytes" }
+      }
+    },
+    {
+      "title": "Active Threads",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        {
+          "expr": "jvm_threads_live_threads{application=\"taskflow-backend\"}",
+          "legendFormat": "Live"
+        },
+        {
+          "expr": "jvm_threads_daemon_threads{application=\"taskflow-backend\"}",
+          "legendFormat": "Daemon"
+        }
+      ]
+    },
+    {
+      "title": "DB Connection Pool",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "targets": [
+        {
+          "expr": "hikaricp_connections_active{application=\"taskflow-backend\"}",
+          "legendFormat": "Active"
+        },
+        {
+          "expr": "hikaricp_connections_idle{application=\"taskflow-backend\"}",
+          "legendFormat": "Idle"
+        },
+        {
+          "expr": "hikaricp_connections_pending{application=\"taskflow-backend\"}",
+          "legendFormat": "Pending"
+        }
+      ]
+    },
+    {
+      "title": "Error Rate (5xx)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"taskflow-backend\", status=~\"5..\"}[5m]))",
+          "legendFormat": "5xx/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "GC Pause Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "targets": [
+        {
+          "expr": "rate(jvm_gc_pause_seconds_sum{application=\"taskflow-backend\"}[5m])",
+          "legendFormat": "{{action}} {{cause}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["taskflow", "spring-boot", "jvm"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "TaskFlow — Spring Boot Dashboard",
+  "uid": "taskflow-backend"
+}

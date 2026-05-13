@@ -87,15 +87,36 @@ Frontend starts at `http://localhost:5173`
 ### Docker (Full Stack)
 
 ```bash
-# From the devops-pipeline directory
+# Copy environment template and edit secrets
+cp .env.example .env
+
+# Start all services
 docker-compose up --build
+
+# (Optional) Start with monitoring stack
+docker-compose --profile monitoring up --build
 ```
 
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:8080`
 - PostgreSQL: `localhost:5432`
+- Prometheus: `http://localhost:9090` (monitoring profile)
+- Grafana: `http://localhost:3001` (monitoring profile)
 
-## 📡 API Endpoints
+### Kubernetes
+
+```bash
+# Apply all manifests
+kubectl apply -f k8s/namespace.yml
+kubectl apply -f k8s/postgres-secret.yml
+kubectl apply -f k8s/postgres-deployment.yml
+kubectl apply -f k8s/backend-configmap.yml
+kubectl apply -f k8s/backend-deployment.yml
+kubectl apply -f k8s/frontend-deployment.yml
+kubectl apply -f k8s/ingress.yml
+```
+
+## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -113,14 +134,14 @@ docker-compose up --build
 | GET | `/api/tasks/project/{id}/analytics/priority` | Task priority counts |
 | WS | `/ws` | WebSocket (STOMP) endpoint |
 
-##  Monitoring
+## Monitoring
 
 - **Health**: `http://localhost:8080/actuator/health`
 - **Metrics**: `http://localhost:8080/actuator/prometheus`
-- **Prometheus**: See `devops-pipeline/monitoring/prometheus.yml`
-- **Grafana**: Import dashboard ID `4701` for Spring Boot metrics
+- **Prometheus**: See `monitoring/prometheus.yml` — scrapes backend every 10s
+- **Grafana**: Auto-provisioned dashboard at `http://localhost:3001` (admin/admin)
 
-##  Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -135,41 +156,58 @@ docker-compose up --build
 
 ```
 task-management-system/
+├── .github/workflows/
+│   └── ci-cd.yml           — GitHub Actions CI/CD pipeline
 ├── backend/
 │   ├── src/main/java/com/taskmanager/
-│   │   ├── config/       — Security, WebSocket, CORS config
-│   │   ├── controller/   — REST endpoints (Auth, Project, Task)
-│   │   ├── dto/          — Request/response DTOs
-│   │   ├── entity/       — JPA entities (User, Project, Task, Comment)
-│   │   ├── repository/   — Spring Data repositories
-│   │   ├── service/      — Business logic layer
-│   │   └── util/         — JWT utilities
+│   │   ├── config/         — Security, WebSocket, CORS config
+│   │   ├── controller/     — REST endpoints (Auth, Project, Task)
+│   │   ├── dto/            — Request/response DTOs
+│   │   ├── entity/         — JPA entities (User, Project, Task, Comment)
+│   │   ├── repository/     — Spring Data repositories
+│   │   ├── service/        — Business logic layer
+│   │   └── util/           — JWT utilities
 │   ├── Dockerfile
 │   └── pom.xml
-└── frontend/
-    ├── src/
-    │   ├── api/            — Axios API layer with JWT interceptors
-    │   ├── components/
-    │   │   ├── CommandPalette  — ⌘K spotlight search
-    │   │   ├── FocusTimer      — Pomodoro timer widget
-    │   │   ├── KanbanBoard     — Drag-and-drop board
-    │   │   ├── Navbar          — Navigation with user dropdown
-    │   │   ├── Particles       — Animated background particles
-    │   │   ├── TaskCard        — Card with subtask progress
-    │   │   ├── TaskDetailModal — Full task editor with checklists
-    │   │   └── Toast           — Notification system
-    │   ├── context/
-    │   │   ├── AuthContext     — JWT auth state
-    │   │   ├── ToastContext    — Global toast notifications
-    │   │   └── ActivityContext — Activity tracking (localStorage)
-    │   └── pages/
-    │       ├── Login           — Sign in with remember me
-    │       ├── Register        — Sign up with password strength
-    │       ├── Dashboard       — Projects grid + activity timeline
-    │       ├── Board           — Kanban board view
-    │       └── Analytics       — Charts and stats
-    ├── Dockerfile
-    └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── api/            — Axios API layer with JWT interceptors
+│   │   ├── components/
+│   │   │   ├── CommandPalette  — ⌘K spotlight search
+│   │   │   ├── FocusTimer      — Pomodoro timer widget
+│   │   │   ├── KanbanBoard     — Drag-and-drop board
+│   │   │   ├── Navbar          — Navigation with user dropdown
+│   │   │   ├── Particles       — Animated background particles
+│   │   │   ├── TaskCard        — Card with subtask progress
+│   │   │   ├── TaskDetailModal — Full task editor with checklists
+│   │   │   └── Toast           — Notification system
+│   │   ├── context/
+│   │   │   ├── AuthContext     — JWT auth state
+│   │   │   ├── ToastContext    — Global toast notifications
+│   │   │   └── ActivityContext — Activity tracking (localStorage)
+│   │   └── pages/
+│   │       ├── Login           — Sign in with remember me
+│   │       ├── Register        — Sign up with password strength
+│   │       ├── Dashboard       — Projects grid + activity timeline
+│   │       ├── Board           — Kanban board view
+│   │       └── Analytics       — Charts and stats
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   └── package.json
+├── k8s/
+│   ├── namespace.yml           — taskflow namespace
+│   ├── postgres-secret.yml     — DB & JWT credentials
+│   ├── postgres-deployment.yml — PostgreSQL + PVC + Service
+│   ├── backend-configmap.yml   — Spring Boot config
+│   ├── backend-deployment.yml  — Backend (2 replicas) + Service
+│   ├── frontend-deployment.yml — Frontend (2 replicas) + Service
+│   └── ingress.yml             — Nginx Ingress routing
+├── monitoring/
+│   ├── prometheus.yml          — Prometheus scrape config
+│   └── grafana/provisioning/   — Datasource + dashboard auto-provisioning
+├── docker-compose.yml          — Full-stack orchestration
+├── .env.example                — Environment variable template
+└── README.md
 ```
 
 ## Screenshots

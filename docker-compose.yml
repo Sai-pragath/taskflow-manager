@@ -1,0 +1,117 @@
+version: "3.9"
+
+services:
+  # ─────────────────────────────────────────
+  # PostgreSQL Database
+  # ─────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: taskflow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-taskdb}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-taskdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────
+  # Spring Boot Backend
+  # ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: taskflow-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-taskdb}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      JWT_SECRET: ${JWT_SECRET:-TaskManagerSecretKeyForJWTAuthenticationMustBeAtLeast256BitsLong2024!}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  # ─────────────────────────────────────────
+  # React Frontend (nginx)
+  # ─────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: taskflow-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # ─────────────────────────────────────────
+  # Prometheus (monitoring profile)
+  # ─────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: taskflow-prometheus
+    restart: unless-stopped
+    profiles: ["monitoring"]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────
+  # Grafana (monitoring profile)
+  # ─────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: taskflow-grafana
+    restart: unless-stopped
+    profiles: ["monitoring"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  pgdata:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
