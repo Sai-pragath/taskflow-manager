@@ -6,8 +6,32 @@ const PRIORITY_MAP = {
   LOW: { label: 'Low', className: 'badge-low' },
 };
 
-export default function TaskCard({ task, provided, onDelete }) {
+function parseSubtasks(description) {
+  if (!description) return [];
+  try {
+    const marker = '<!--subtasks:';
+    const idx = description.indexOf(marker);
+    if (idx === -1) return [];
+    const jsonStr = description.slice(idx + marker.length, description.indexOf('-->', idx));
+    return JSON.parse(jsonStr);
+  } catch {
+    return [];
+  }
+}
+
+function getCleanDescription(description) {
+  if (!description) return '';
+  const marker = '<!--subtasks:';
+  const idx = description.indexOf(marker);
+  if (idx === -1) return description;
+  return description.slice(0, idx).trim();
+}
+
+export default function TaskCard({ task, provided, onDelete, onOpen }) {
   const priority = PRIORITY_MAP[task.priority] || PRIORITY_MAP.MEDIUM;
+  const subtasks = parseSubtasks(task.description);
+  const completedCount = subtasks.filter((s) => s.done).length;
+  const cleanDesc = getCleanDescription(task.description);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return null;
@@ -23,27 +47,45 @@ export default function TaskCard({ task, provided, onDelete }) {
       {...provided.dragHandleProps}
       style={provided.draggableProps.style}
       id={`task-card-${task.id}`}
+      onClick={() => onOpen?.(task)}
     >
       {/* Header row */}
       <div className="task-card-header">
         <span className={`badge ${priority.className}`}>{priority.label}</span>
-        {onDelete && (
-          <button
-            className="task-card-delete"
-            onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
-            title="Delete task"
-          >
-            ×
-          </button>
-        )}
+        <div className="task-card-actions-row">
+          {onDelete && (
+            <button
+              className="task-card-delete"
+              onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
+              title="Delete task"
+            >
+              ×
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Title */}
       <h4 className="task-card-title">{task.title}</h4>
 
       {/* Description */}
-      {task.description && (
-        <p className="task-card-desc">{task.description}</p>
+      {cleanDesc && (
+        <p className="task-card-desc">{cleanDesc}</p>
+      )}
+
+      {/* Subtasks progress */}
+      {subtasks.length > 0 && (
+        <div className="task-card-subtasks">
+          <div className="task-card-subtask-bar">
+            <div
+              className="task-card-subtask-fill"
+              style={{ width: `${(completedCount / subtasks.length) * 100}%` }}
+            />
+          </div>
+          <span className="task-card-subtask-label">
+            ✓ {completedCount}/{subtasks.length}
+          </span>
+        </div>
       )}
 
       {/* Footer */}

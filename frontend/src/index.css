@@ -93,6 +93,17 @@ body::before {
   z-index: 0;
 }
 
+/* Noise texture overlay for premium depth */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
 #root {
   position: relative;
   z-index: 1;
@@ -108,6 +119,42 @@ a {
 }
 a:hover {
   color: var(--accent-secondary);
+}
+
+/* ---------- Floating Particles Background ---------- */
+.particles-container {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: var(--size, 4px);
+  height: var(--size, 4px);
+  background: var(--color, rgba(108, 99, 255, 0.3));
+  border-radius: 50%;
+  animation: particleFloat var(--duration, 20s) var(--delay, 0s) infinite linear;
+  opacity: 0;
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(100vh) translateX(0) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--opacity, 0.6);
+  }
+  90% {
+    opacity: var(--opacity, 0.6);
+  }
+  100% {
+    transform: translateY(-10vh) translateX(var(--drift, 50px)) scale(1);
+    opacity: 0;
+  }
 }
 
 /* ---------- Scrollbar ---------- */
@@ -161,6 +208,20 @@ a:hover {
   overflow: hidden;
 }
 
+/* Ripple effect */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.25) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.btn:active::after {
+  opacity: 1;
+  transition: opacity 0s;
+}
+
 .btn-primary {
   background: var(--gradient-primary);
   color: #fff;
@@ -196,6 +257,26 @@ a:hover {
 .btn-sm {
   padding: 6px 14px;
   font-size: 0.8rem;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon-sm {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ---------- Inputs ---------- */
@@ -234,6 +315,33 @@ a:hover {
   margin-bottom: 20px;
 }
 
+/* Input with icon/action button inside */
+.input-wrapper {
+  position: relative;
+}
+.input-wrapper .input-field {
+  padding-right: 44px;
+}
+.input-action-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+  font-size: 1rem;
+}
+.input-action-btn:hover {
+  color: var(--text-primary);
+}
+
 /* ---------- Select ---------- */
 .select-field {
   width: 100%;
@@ -255,6 +363,44 @@ a:hover {
 .select-field:focus {
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 3px var(--accent-primary-glow);
+}
+
+/* ---------- Checkbox ---------- */
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  user-select: none;
+}
+.checkbox-wrapper input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--bg-glass);
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+.checkbox-wrapper input[type="checkbox"]:checked {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+.checkbox-wrapper input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
 /* ---------- Badge / Tag ---------- */
@@ -346,11 +492,18 @@ a:hover {
   max-width: 480px;
   box-shadow: var(--shadow-lg);
   animation: slideUp 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 .modal-title {
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 20px;
+}
+
+/* Wide modal variant */
+.modal-content-wide {
+  max-width: 640px;
 }
 
 /* ---------- Stats Grid ---------- */
@@ -380,6 +533,48 @@ a:hover {
   margin-top: 4px;
 }
 
+/* ---------- Utility Classes ---------- */
+.text-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow-border {
+  position: relative;
+}
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: var(--gradient-primary);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  filter: blur(8px);
+}
+.glow-border:hover::before {
+  opacity: 0.4;
+}
+
+.float-animation {
+  animation: floatBounce 3s ease-in-out infinite;
+}
+
+@keyframes floatBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Stagger animation utility */
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+
 /* ---------- Animations ---------- */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -396,6 +591,16 @@ a:hover {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(30px); }
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -406,12 +611,36 @@ a:hover {
   100% { background-position: 200% 0; }
 }
 
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(108, 99, 255, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(108, 99, 255, 0.25); }
+}
+
+@keyframes borderGlow {
+  0%, 100% { border-color: rgba(108, 99, 255, 0.2); }
+  50% { border-color: rgba(108, 99, 255, 0.5); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes progressShrink {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
 .animate-fade-in {
   animation: fadeIn 400ms ease;
 }
 
 .animate-slide-up {
   animation: slideUp 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-scale-in {
+  animation: scaleIn 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ---------- Loading Skeleton ---------- */
@@ -436,6 +665,30 @@ a:hover {
 .empty-state-text {
   font-size: 1.1rem;
   margin-bottom: 16px;
+}
+
+/* ---------- Divider ---------- */
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 20px 0;
+}
+
+/* ---------- Kbd (keyboard shortcut) ---------- */
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  font-family: var(--font-family);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  min-width: 20px;
+  line-height: 1.4;
 }
 
 /* ---------- Responsive ---------- */

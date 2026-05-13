@@ -1,15 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
+import { useActivity } from '../context/ActivityContext.jsx';
 import { loginUser } from '../api/index.js';
 import './Auth.css';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { toast } = useToast();
+  const { logActivity } = useActivity();
   const navigate = useNavigate();
+
+  // Load remembered email
+  useEffect(() => {
+    const remembered = localStorage.getItem('taskflow_remembered_email');
+    if (remembered) {
+      setForm((prev) => ({ ...prev, email: remembered }));
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,9 +38,21 @@ export default function Login() {
         email: res.data.email,
         role: res.data.role,
       });
+
+      // Remember email preference
+      if (rememberMe) {
+        localStorage.setItem('taskflow_remembered_email', form.email);
+      } else {
+        localStorage.removeItem('taskflow_remembered_email');
+      }
+
+      logActivity('login', { email: form.email });
+      toast.success(`Welcome back, ${res.data.name?.split(' ')[0] || 'there'}! 👋`);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
+      const msg = err.response?.data?.error || 'Login failed. Please try again.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -37,6 +64,7 @@ export default function Login() {
       <div className="auth-orb auth-orb-1" />
       <div className="auth-orb auth-orb-2" />
       <div className="auth-orb auth-orb-3" />
+      <div className="auth-mesh" />
 
       <div className="auth-container animate-slide-up">
         {/* Brand */}
@@ -66,15 +94,38 @@ export default function Login() {
 
           <div className="input-group">
             <label className="input-label" htmlFor="password">Password</label>
-            <input
-              className="input-field"
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              required
-            />
+            <div className="input-wrapper">
+              <input
+                className="input-field"
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                required
+              />
+              <button
+                type="button"
+                className="input-action-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? '🙈' : '👁'}
+              </button>
+            </div>
+          </div>
+
+          {/* Remember Me */}
+          <div className="auth-options">
+            <label className="checkbox-wrapper">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              Remember me
+            </label>
           </div>
 
           <button

@@ -2,7 +2,46 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getProjects, createProject, deleteProject } from '../api/index.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
+import { useActivity } from '../context/ActivityContext.jsx';
 import './Dashboard.css';
+
+const ACTION_ICONS = {
+  task_created: '📝',
+  task_moved: '➡️',
+  task_deleted: '🗑️',
+  task_updated: '✏️',
+  project_created: '📁',
+  project_deleted: '🗑️',
+  login: '🔑',
+  account_created: '🎉',
+};
+
+function timeAgo(dateStr) {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (seconds < 60) return 'just now';
+  const mins = Math.floor(seconds / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function activityLabel(activity) {
+  const d = activity.details;
+  switch (activity.action) {
+    case 'task_created': return `Created task "${d.title}"`;
+    case 'task_moved': return `Moved "${d.title}" to ${d.status?.replace('_', ' ')}`;
+    case 'task_deleted': return `Deleted task "${d.title}"`;
+    case 'task_updated': return `Updated task "${d.title}"`;
+    case 'project_created': return `Created project "${d.name}"`;
+    case 'project_deleted': return `Deleted project "${d.name}"`;
+    case 'login': return 'Signed in';
+    case 'account_created': return 'Created account';
+    default: return activity.action;
+  }
+}
 
 export default function Dashboard() {
   const [projects, setProjects] = useState([]);
@@ -11,6 +50,8 @@ export default function Dashboard() {
   const [newProject, setNewProject] = useState({ name: '', description: '' });
   const [error, setError] = useState('');
   const { user } = useAuth();
+  const { toast } = useToast();
+  const { activities, logActivity } = useActivity();
 
   useEffect(() => {
     fetchProjects();
@@ -41,25 +82,35 @@ export default function Dashboard() {
     setError('');
     try {
       await createProject(newProject);
+      logActivity('project_created', { name: newProject.name });
+      toast.success(`Project "${newProject.name}" created!`);
       setNewProject({ name: '', description: '' });
       await fetchProjects();
       setShowNew(false);
     } catch (err) {
       console.error('Failed to create project:', err);
-      setError(err.response?.data?.error || 'Failed to create project. Please try again.');
+      const msg = err.response?.data?.error || 'Failed to create project. Please try again.';
+      setError(msg);
+      toast.error(msg);
     }
   };
 
   const handleDelete = async (id) => {
+    const project = projects.find((p) => p.id === id);
     if (!confirm('Delete this project and all its tasks?')) return;
     try {
       setProjects((prev) => prev.filter((p) => p.id !== id));
       await deleteProject(id);
+      logActivity('project_deleted', { name: project?.name });
+      toast.success('Project deleted');
     } catch (err) {
       console.error('Failed to delete project:', err);
+      toast.error('Failed to delete project');
       fetchProjects();
     }
   };
+
+  const recentActivities = activities.slice(0, 10);
 
   return (
     <div className="page-container animate-fade-in">
@@ -98,6 +149,10 @@ export default function Dashboard() {
           </div>
           <div className="stat-label">Status</div>
         </div>
+        <div className="glass-card stat-card">
+          <div className="stat-value">{recentActivities.length}</div>
+          <div className="stat-label">Recent Actions</div>
+        </div>
       </div>
 
       {/* Projects Grid */}
@@ -121,8 +176,13 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="projects-grid">
-          {projects.map((project) => (
-            <div key={project.id} className="glass-card project-card" id={`project-${project.id}`}>
+          {projects.map((project, index) => (
+            <div
+              key={project.id}
+              className="glass-card project-card"
+              id={`project-${project.id}`}
+              style={{ animationDelay: `${index * 60}ms` }}
+            >
               <div className="project-card-header">
                 <div className="project-card-icon">
                   {project.name.charAt(0).toUpperCase()}
@@ -154,6 +214,31 @@ export default function Dashboard() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Activity Timeline */}
+      {recentActivities.length > 0 && (
+        <div className="activity-section">
+          <h2 className="activity-section-title">Recent Activity</h2>
+          <div className="activity-timeline">
+            {recentActivities.map((activity, index) => (
+              <div
+                key={activity.id}
+                className="activity-item animate-slide-up"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <div className="activity-dot" />
+                <div className="activity-icon">
+                  {ACTION_ICONS[activity.action] || '📌'}
+                </div>
+                <div className="activity-content">
+                  <span className="activity-label">{activityLabel(activity)}</span>
+                  <span className="activity-time">{timeAgo(activity.timestamp)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

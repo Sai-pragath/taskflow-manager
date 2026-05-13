@@ -3,7 +3,10 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { getTasks, updateTaskStatus, createTask, deleteTask } from '../api/index.js';
+import { useToast } from '../context/ToastContext.jsx';
+import { useActivity } from '../context/ActivityContext.jsx';
 import TaskCard from './TaskCard.jsx';
+import TaskDetailModal from './TaskDetailModal.jsx';
 import './KanbanBoard.css';
 
 const COLUMNS = [
@@ -18,6 +21,9 @@ export default function KanbanBoard({ projectId }) {
   const [loading, setLoading] = useState(true);
   const [showNewTask, setShowNewTask] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'MEDIUM' });
+  const [selectedTask, setSelectedTask] = useState(null);
+  const { toast } = useToast();
+  const { logActivity } = useActivity();
 
   // Fetch tasks
   const fetchTasks = useCallback(async () => {
@@ -80,8 +86,11 @@ export default function KanbanBoard({ projectId }) {
 
     try {
       await updateTaskStatus(draggableId, newStatus);
+      const task = tasks.find((t) => t.id === draggableId);
+      logActivity('task_moved', { title: task?.title, status: newStatus });
     } catch (err) {
       console.error('Failed to update status:', err);
+      toast.error('Failed to move task');
       fetchTasks(); // Revert on error
     }
   };
@@ -96,21 +105,28 @@ export default function KanbanBoard({ projectId }) {
         ...newTask,
         projectId,
       });
+      logActivity('task_created', { title: newTask.title, projectId });
+      toast.success(`Task "${newTask.title}" created`);
       setNewTask({ title: '', description: '', priority: 'MEDIUM' });
       setShowNewTask(false);
       fetchTasks();
     } catch (err) {
       console.error('Failed to create task:', err);
+      toast.error('Failed to create task');
     }
   };
 
   // Delete task
   const handleDeleteTask = async (taskId) => {
+    const task = tasks.find((t) => t.id === taskId);
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
     try {
       await deleteTask(taskId);
+      logActivity('task_deleted', { title: task?.title });
+      toast.success('Task deleted');
     } catch (err) {
       console.error('Failed to delete task:', err);
+      toast.error('Failed to delete task');
       fetchTasks();
     }
   };
@@ -181,6 +197,7 @@ export default function KanbanBoard({ projectId }) {
                               task={task}
                               provided={provided}
                               onDelete={handleDeleteTask}
+                              onOpen={(t) => setSelectedTask(t)}
                             />
                           )}
                         </Draggable>
@@ -255,6 +272,15 @@ export default function KanbanBoard({ projectId }) {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Task Detail Modal */}
+      {selectedTask && (
+        <TaskDetailModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onUpdate={fetchTasks}
+        />
       )}
     </div>
   );
