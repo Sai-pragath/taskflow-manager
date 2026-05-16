@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { updateTask } from '../api/index.js';
+import { updateTask, getUsers } from '../api/index.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { useActivity } from '../context/ActivityContext.jsx';
 import './TaskDetailModal.css';
@@ -35,8 +35,10 @@ export default function TaskDetailModal({ task, onClose, onUpdate }) {
   const [descText, setDescText] = useState('');
   const [subtasks, setSubtasks] = useState([]);
   const [priority, setPriority] = useState(task.priority);
+  const [assigneeId, setAssigneeId] = useState(task.assignee?.id || '');
   const [newSubtask, setNewSubtask] = useState('');
   const [saving, setSaving] = useState(false);
+  const [users, setUsers] = useState([]);
   const { toast } = useToast();
   const { logActivity } = useActivity();
 
@@ -44,6 +46,9 @@ export default function TaskDetailModal({ task, onClose, onUpdate }) {
     const { text, subtasks: parsed } = parseSubtasks(task.description);
     setDescText(text);
     setSubtasks(parsed);
+    
+    // Fetch users for assignee dropdown
+    getUsers().then(res => setUsers(res.data)).catch(console.error);
   }, [task.description]);
 
   const completedCount = subtasks.filter((s) => s.done).length;
@@ -66,7 +71,7 @@ export default function TaskDetailModal({ task, onClose, onUpdate }) {
     setSaving(true);
     try {
       const description = serializeSubtasks(descText, subtasks);
-      await updateTask(task.id, { title, description, priority });
+      await updateTask(task.id, { title, description, priority, assigneeId: assigneeId || null });
       logActivity('task_updated', { title, taskId: task.id });
       toast.success('Task updated');
       onUpdate?.();
@@ -108,6 +113,21 @@ export default function TaskDetailModal({ task, onClose, onUpdate }) {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Assignee selector */}
+        <div className="task-detail-section">
+          <label className="input-label">Assignee</label>
+          <select 
+            className="select-field" 
+            value={assigneeId} 
+            onChange={(e) => setAssigneeId(e.target.value)}
+          >
+            <option value="">Unassigned</option>
+            {users.map(u => (
+              <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+            ))}
+          </select>
         </div>
 
         {/* Description */}

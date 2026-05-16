@@ -31,6 +31,9 @@ API.interceptors.response.use(
 export const registerUser = (data) => API.post('/auth/register', data);
 export const loginUser = (data) => API.post('/auth/login', data);
 
+// --- Users ---
+export const getUsers = () => API.get('/users');
+
 // --- Projects ---
 export const getProjects = () => API.get('/projects');
 export const getProject = (id) => API.get(`/projects/${id}`);

@@ -15,7 +15,6 @@ public class TaskRequest {
 
     private String priority;
 
-    @NotBlank(message = "Project ID is required")
     private String projectId;
 
     private String assigneeId;

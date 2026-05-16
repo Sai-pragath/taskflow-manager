@@ -39,6 +39,9 @@ public class TaskService {
 
     @Transactional
     public Task create(TaskRequest request, String userEmail) {
+        if (request.getProjectId() == null || request.getProjectId().trim().isEmpty()) {
+            throw new RuntimeException("Project ID is required");
+        }
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 

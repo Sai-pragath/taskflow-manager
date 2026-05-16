@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { getTasks, updateTaskStatus, createTask, deleteTask } from '../api/index.js';
+import { getTasks, updateTaskStatus, createTask, deleteTask, getUsers } from '../api/index.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { useActivity } from '../context/ActivityContext.jsx';
 import TaskCard from './TaskCard.jsx';
@@ -20,8 +20,9 @@ export default function KanbanBoard({ projectId }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNewTask, setShowNewTask] = useState(false);
-  const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'MEDIUM' });
+  const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'MEDIUM', assigneeId: '' });
   const [selectedTask, setSelectedTask] = useState(null);
+  const [users, setUsers] = useState([]);
   const { toast } = useToast();
   const { logActivity } = useActivity();
 
@@ -39,6 +40,7 @@ export default function KanbanBoard({ projectId }) {
 
   useEffect(() => {
     fetchTasks();
+    getUsers().then(res => setUsers(res.data)).catch(console.error);
 
     // WebSocket for real-time updates
     let client;
@@ -107,7 +109,7 @@ export default function KanbanBoard({ projectId }) {
       });
       logActivity('task_created', { title: newTask.title, projectId });
       toast.success(`Task "${newTask.title}" created`);
-      setNewTask({ title: '', description: '', priority: 'MEDIUM' });
+      setNewTask({ title: '', description: '', priority: 'MEDIUM', assigneeId: '' });
       setShowNewTask(false);
       fetchTasks();
     } catch (err) {
@@ -259,6 +261,19 @@ export default function KanbanBoard({ projectId }) {
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
                   <option value="HIGH">High</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <label className="input-label">Assignee</label>
+                <select
+                  className="select-field"
+                  value={newTask.assigneeId}
+                  onChange={(e) => setNewTask({ ...newTask, assigneeId: e.target.value })}
+                >
+                  <option value="">Unassigned</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                  ))}
                 </select>
               </div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
