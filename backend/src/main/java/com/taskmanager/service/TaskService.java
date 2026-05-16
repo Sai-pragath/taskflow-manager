@@ -87,9 +87,15 @@ public class TaskService {
             task.setStatus(Task.Status.valueOf(request.getStatus()));
         }
         if (request.getAssigneeId() != null) {
-            User assignee = userRepository.findById(request.getAssigneeId())
-                    .orElseThrow(() -> new RuntimeException("Assignee not found"));
-            task.setAssignee(assignee);
+            if (request.getAssigneeId().trim().isEmpty()) {
+                task.setAssignee(null);
+            } else {
+                User assignee = userRepository.findById(request.getAssigneeId())
+                        .orElseThrow(() -> new RuntimeException("Assignee not found"));
+                task.setAssignee(assignee);
+            }
+        } else {
+            task.setAssignee(null);
         }
         if (request.getDueDate() != null) {
             task.setDueDate(LocalDateTime.parse(request.getDueDate()));
