@@ -25,6 +25,7 @@ A full-stack **Kanban-style task management system** with real-time collaboratio
 - **⌘K Command Palette** — Spotlight-style search overlay to instantly navigate projects, boards, and analytics. Full keyboard navigation with fuzzy search.
 - **Focus Timer (Pomodoro)** — Built-in productivity timer with 25/5/15 min work/break cycles, circular SVG progress ring, desktop notifications on completion, and session tracking.
 - **Subtasks & Checklists** — Break tasks into sub-items with progress tracking. Click any task card to open a detail modal for managing checklists, editing descriptions, and changing priorities.
+- **Task Assignment** — Fetch users dynamically and assign specific members to tasks with real-time card updates showing assignee initials.
 - **Activity Timeline** — Real-time activity feed on the dashboard tracking task creation, status changes, project events, and logins with relative timestamps.
 - **Password Strength Meter** — Live visual feedback during registration with animated strength bar (Weak → Excellent), inline validation hints, and password confirmation field.
 - **Toast Notifications** — Global notification system (success/error/info/warning) with auto-dismiss progress bars, replacing all browser alerts.
@@ -125,6 +126,7 @@ kubectl apply -f k8s/ingress.yml
 | GET | `/api/projects` | List user's projects |
 | POST | `/api/projects` | Create project |
 | DELETE | `/api/projects/{id}` | Delete project |
+| GET | `/api/users` | List all users for task assignment |
 | GET | `/api/tasks/project/{id}` | Get tasks for project |
 | POST | `/api/tasks` | Create task |
 | PUT | `/api/tasks/{id}` | Update task |
